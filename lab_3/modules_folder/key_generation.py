@@ -31,7 +31,7 @@ def asymmetric_key_generate():
     return [private_key, public_key]
 
 
-def symm_key_serialize(filepath: str, key: str) -> None:
+def text_key_serialize(filepath: str, key: str) -> None:
     with open(filepath, 'wb') as key_file:
         key_file.write(key)
 
@@ -64,12 +64,13 @@ def RSA_encryption(text: str, public_key):
 def key_gen_and_save(json_data):
     # symmetric key gen and save
     symm_key = symmetric_key_generate()
-    symm_key_serialize(json_data['symmetric_key'], symm_key)
+    text_key_serialize(json_data['symmetric_key'], symm_key)
 
     # asymm keys gen and save
     private_key, public_key = asymmetric_key_generate()
     public_key_serialize(json_data['public_key'], public_key)
-    private_key_serialize(json_data['secret_key'], private_key)
+    private_key_serialize(json_data['private_key'], private_key)
 
     # encryption of symm_key
     crypted_symm_key = RSA_encryption(symm_key, public_key)
+    text_key_serialize(json_data['secret_key'], crypted_symm_key)

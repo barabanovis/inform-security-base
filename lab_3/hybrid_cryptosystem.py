@@ -11,6 +11,7 @@ settings = {
     'decrypted_file': 'data/dectypted_text.txt',
     'symmetric_key': 'data/symmetric_key.txt',
     'public_key': 'data/public_key.pem',
+    'private_key': 'data/private_key.pem',
     'secret_key': 'data/secret_key.pem',
 }
 
@@ -41,8 +42,7 @@ def argument_parsing():
     if args.generation:
         key_generation.key_gen_and_save(json_data)
     elif args.encryption:
-        # шифруем
-        pass
+        encryption.data_encryption(json_data)
     elif args.decryption:
         # дешифруем
         pass
