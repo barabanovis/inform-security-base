@@ -7,7 +7,9 @@ import os  # можно обойтись стандартным модулем
 
 
 def symmetric_key_generate() -> str:
-    # генерация ключа симметричного алгоритма шифрования
+    '''
+    генерация ключа для симметричного алгоритма шифрования
+    '''
     key = os.urandom(32)  # это байты
     print("Symmetric key generated!")
     print("Type of key: ", type(key))
@@ -16,7 +18,9 @@ def symmetric_key_generate() -> str:
 
 
 def asymmetric_key_generate():
-    # генерация пары ключей для асимметричного алгоритма шифрования
+    '''
+    генерация пары ключей для асимметричного алгоритма шифрования
+    '''
     keys = rsa.generate_private_key(
         public_exponent=65537,
         key_size=2048
@@ -32,19 +36,26 @@ def asymmetric_key_generate():
 
 
 def text_key_serialize(filepath: str, key: str) -> None:
+    '''
+    сериализация(запись) данных в файл по пути filepath
+    '''
     with open(filepath, 'wb') as key_file:
         key_file.write(key)
 
 
 def public_key_serialize(public_pem_path: str, public_key):
-    # сериализация открытого ключа в файл
+    '''
+    сериализация открытого ключа в файл
+    '''
     with open(public_pem_path, 'wb') as public_out:
         public_out.write(public_key.public_bytes(encoding=serialization.Encoding.PEM,
                                                  format=serialization.PublicFormat.SubjectPublicKeyInfo))
 
 
 def private_key_serialize(private_pem_path: str, private_key):
-    # сериализация закрытого ключа в файл
+    '''
+    сериализация закрытого ключа в файл
+    '''
     with open(private_pem_path, 'wb') as private_out:
         private_out.write(private_key.private_bytes(encoding=serialization.Encoding.PEM,
                                                     format=serialization.PrivateFormat.TraditionalOpenSSL,
@@ -52,7 +63,9 @@ def private_key_serialize(private_pem_path: str, private_key):
 
 
 def RSA_encryption(text: str, public_key):
-    # шифрование текста при помощи RSA-OAEP (это усиливающая классический RSA cхема с использованием двух криптостойких хеш-функций и паддинга, если интересно, можно почитать здесь https://habr.com/ru/post/99376/)
+    '''
+    шифрование текста при помощи RSA-OAEP (это усиливающая классический RSA cхема с использованием двух криптостойких хеш-функций и паддинга, если интересно, можно почитать здесь https://habr.com/ru/post/99376/)
+    '''
     text = bytes(text)
     c_text = public_key.encrypt(text, padding.OAEP(mgf=padding.MGF1(
         algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None))
@@ -62,7 +75,9 @@ def RSA_encryption(text: str, public_key):
 
 
 def key_gen_and_save(json_data):
-    # symmetric key gen and save
+    '''
+    symmetric key gen and save
+    '''
     symm_key = symmetric_key_generate()
     text_key_serialize(json_data['symmetric_key'], symm_key)
 
