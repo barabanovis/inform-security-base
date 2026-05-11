@@ -1,9 +1,10 @@
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives.serialization import load_pem_public_key, load_pem_private_key
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.primitives.asymmetric import padding as asymm_padding
 from cryptography.hazmat.primitives import padding as symm_padding
 from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.backends import default_backend
 import os
 
 
@@ -78,18 +79,43 @@ def text_padding(text: str) -> bytes:
 # Зашифровать текст по симметрическому ключу
 
 
-def symm_encryption(symm_key: bytes, padded_text: bytes):
-    # шифрование текста симметричным алгоритмом
-    # случайное значение для инициализации блочного режима, должно быть размером с блок и каждый раз новым
-    iv = os.urandom(16)
-    cipher = Cipher(algorithms.AES(symm_key), modes.CBC(iv))
-    encryptor = cipher.encryptor()
-    c_text = encryptor.update(padded_text) + encryptor.finalize()
+def symm_encryption(symm_key: bytes, padded_text: bytes) -> bytes:
+    """
+    Шифрование текста симметричным алгоритмом 3DES-CBC.
+    """
+    try:
+        # Проверка длины ключа для 3DES
+        if len(symm_key) not in (16, 24):
+            raise ValueError("3DES key must be 16 or 24 bytes long")
 
-    print("Text successfully encrypted using a symmetric key!")
-    print("TEXT: ", padded_text)
-    print("ENCRYPTED TEXT: ", c_text)
-    return c_text
+        # Генерация IV (8 байт для 3DES — размер блока 8 байт)
+        iv = os.urandom(8)
+
+        # Создание шифра с указанием бэкенда
+        cipher = Cipher(
+            algorithms.TripleDES(symm_key),
+            modes.CBC(iv),
+            backend=default_backend()
+        )
+        encryptor = cipher.encryptor()
+
+        # Шифрование
+        c_text = encryptor.update(padded_text) + encryptor.finalize()
+
+        # Возвращаем IV + зашифрованные данные для возможности расшифровки
+        result = iv + c_text
+
+        print("Text successfully encrypted using 3DES!")
+        print("Original text length: ", len(padded_text), "bytes")
+        print("Encrypted data length: ", len(result), "bytes")
+        print("IV (hex): ", iv.hex())
+        print("Encrypted text (hex): ", c_text.hex())
+
+        return result
+
+    except Exception as e:
+        print(f"Encryption error: {e}")
+        raise
 
 
 # Сохранить текст по указанному пути
