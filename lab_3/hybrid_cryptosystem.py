@@ -15,12 +15,22 @@ settings = {
     'secret_key': 'data/secret_key.pem',
 }
 
-# пишем в файл
-with open('settings.json', 'w') as fp:
-    json.dump(settings, fp)
+
+def print_to_json(settings):
+    # пишем в файл
+    with open('settings.json', 'w') as fp:
+        json.dump(settings, fp)
+    return None
 
 
-def argument_parsing():
+def read_json():
+    # читаем из файла
+    with open('settings.json') as json_file:
+        json_data = json.load(json_file)
+    return json_data
+
+
+def argument_parsing() -> str:
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-gen', '--generation',
@@ -35,18 +45,22 @@ def argument_parsing():
 
     args = parser.parse_args()
 
-    # читаем из файла
-    with open('settings.json') as json_file:
-        json_data = json.load(json_file)
-
     if args.generation:
-        key_generation.key_gen_and_save(json_data)
+        return 'generation'
+
     elif args.encryption:
-        encryption.data_encryption(json_data)
+        return 'encryption'
+
     elif args.decryption:
-        # дешифруем
+        return 'decryption'
         pass
 
 
 if __name__ == '__main__':
-    argument_parsing()
+    working_mode = argument_parsing()
+    print_to_json(settings)
+    json_data = read_json()
+    if working_mode == 'generation':
+        key_generation.key_gen_and_save(json_data)
+    elif working_mode == 'encryption':
+        encryption.data_encryption(json_data)

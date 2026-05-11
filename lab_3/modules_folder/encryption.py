@@ -48,16 +48,21 @@ def text_padding(text: str) -> bytes:
     print("=== DEBUG: Padding Process ===")
     print(f"Input text (str): {text}")
 
-    # Конвертируем в байты
     text_bytes = text.encode('UTF-8')
     print(f"Text as bytes: {text_bytes}")
     print(f"Initial length: {len(text_bytes)} bytes")
 
-    # Создаём паддер
-    padder = padding.ANSIX923(16).padder()
+    block_size = 16
+    padding_length = block_size - (len(text_bytes) % block_size)
 
-    # Применяем дополнение
-    padded_text = padder.update(text_bytes) + padder.finalize()
+    if padding_length == 0:
+        # Добавляем полный блок дополнения
+        padding_length = block_size
+        padded_text = text_bytes + b'\x00' * \
+            (padding_length - 1) + bytes([padding_length])
+    else:
+        padded_text = text_bytes + b'\x00' * \
+            (padding_length - 1) + bytes([padding_length])
 
     print(f"Padded text: {padded_text}")
     print(f"Padded length: {len(padded_text)} bytes")
@@ -83,11 +88,13 @@ def symm_encryption(symm_key: bytes, padded_text: bytes):
 
     print("Text successfully encrypted using a symmetric key!")
     print("TEXT: ", padded_text)
+    print("ENCRYPTED TEXT: ", c_text)
+    return c_text
 
 
 # Сохранить текст по указанному пути
-def save_text(text: str, save_path: str):
-    with open(save_path, 'w') as save_file:
+def save_text(text: bytes, save_path: str) -> None:
+    with open(save_path, 'wb') as save_file:
         save_file.write(text)
     print("Text saved successfully!")
 
