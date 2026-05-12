@@ -116,7 +116,7 @@ def max_lenght_p_value(seq: list[bool]) -> float:
     '''
     Подсчет резульатат теста 3
     '''
-    return gammainc(1.5, seq_hi_squared(seq)/2)
+    return 1 - gammainc(1.5, seq_hi_squared(seq)/2)
 
 
 def get_statistics(seq: list[bool]) -> list[float]:
