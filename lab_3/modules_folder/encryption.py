@@ -8,7 +8,7 @@ from cryptography.hazmat.backends import default_backend
 import os
 
 
-def symm_key_deserialize(symm_key_path: str):
+def symm_key_deserialize(symm_key_path: str) -> bytes:
     # десериализация ключа симметричного алгоритма
     with open(symm_key_path, mode='rb') as key_file:
         content = key_file.read()
@@ -26,17 +26,6 @@ def RSA_decrypt(c_text: bytes, private_key):
     print("Text decrypted!")
     print("Text: ", dc_text)
     return dc_text
-
-
-def private_key_deserialize(private_pem: str):
-    # десериализация закрытого ключа
-    with open(private_pem, 'rb') as pem_in:
-        private_bytes = pem_in.read()
-    d_private_key = load_pem_private_key(private_bytes, password=None)
-
-    print(type(d_private_key))
-    print(d_private_key)
-    return d_private_key
 
 
 def read_text(textfile_path: str):
@@ -125,12 +114,10 @@ def save_text(text: bytes, save_path: str) -> None:
     print("Text saved successfully!")
 
 
-def data_encryption(json_data):
+def data_encryption(json_data) -> None:
     text_padding("my text")
 
-    symm_key_crypted = symm_key_deserialize(json_data['secret_key'])
-    private_key = private_key_deserialize(json_data['private_key'])
-    symm_key = RSA_decrypt(symm_key_crypted, private_key)
+    symm_key = symm_key_deserialize(json_data['symmetric_key'])
     text = read_text(json_data['initial_file'])
     text = text_padding(text)
     c_text = symm_encryption(symm_key, text)

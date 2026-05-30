@@ -1,1 +1,9 @@
-{"initial_file": "data/initial_text.txt", "encrypted_file": "data/encrypted_text.txt", "decrypted_file": "data/dectypted_text.txt", "symmetric_key": "data/symmetric_key.txt", "public_key": "data/public_key.pem", "private_key": "data/private_key.pem", "secret_key": "data/secret_key.pem"}
+{
+    "initial_file": "data/initial_text.txt",
+    "encrypted_file": "data/encrypted_text.pem",
+    "decrypted_file": "data/decrypted_text.txt",
+    "symmetric_key": "data/symmetric_key.txt",
+    "public_key": "data/public_key.pem",
+    "private_key": "data/private_key.pem",
+    "secret_key": "data/secret_key.pem"
+}

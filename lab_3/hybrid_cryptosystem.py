@@ -5,23 +5,6 @@ import modules_folder.key_generation as key_generation
 import modules_folder.encryption as encryption
 import modules_folder.decryption as decryption
 
-settings = {
-    'initial_file': 'data/initial_text.txt',
-    'encrypted_file': 'data/encrypted_text.txt',
-    'decrypted_file': 'data/dectypted_text.txt',
-    'symmetric_key': 'data/symmetric_key.txt',
-    'public_key': 'data/public_key.pem',
-    'private_key': 'data/private_key.pem',
-    'secret_key': 'data/secret_key.pem',
-}
-
-
-def print_to_json(settings):
-    # пишем в файл
-    with open('settings.json', 'w') as fp:
-        json.dump(settings, fp)
-    return None
-
 
 def read_json():
     # читаем из файла
@@ -53,14 +36,14 @@ def argument_parsing() -> str:
 
     elif args.decryption:
         return 'decryption'
-        pass
 
 
 if __name__ == '__main__':
     working_mode = argument_parsing()
-    print_to_json(settings)
     json_data = read_json()
     if working_mode == 'generation':
         key_generation.key_gen_and_save(json_data)
     elif working_mode == 'encryption':
         encryption.data_encryption(json_data)
+    else:
+        decryption.decryption(json_data)

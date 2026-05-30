@@ -6,18 +6,18 @@ from cryptography.hazmat.primitives import hashes
 import os  # можно обойтись стандартным модулем
 
 
-def symmetric_key_generate() -> str:
-    '''
-    генерация ключа для симметричного алгоритма шифрования
-    '''
-    key = os.urandom(32)  # это байты
+def symmetric_key_generate(key_size: int = 24) -> bytes:
+    """
+    Генерация ключа для симметричного алгоритма шифрования.
+    """
+    key = os.urandom(key_size)
     print("Symmetric key generated!")
     print("Type of key: ", type(key))
-    print("Key:", key)
+    print("Key (hex): ", key.hex())
     return key
 
 
-def asymmetric_key_generate():
+def asymmetric_key_generate() -> bytes:
     '''
     генерация пары ключей для асимметричного алгоритма шифрования
     '''
@@ -43,7 +43,7 @@ def text_key_serialize(filepath: str, key: str) -> None:
         key_file.write(key)
 
 
-def public_key_serialize(public_pem_path: str, public_key):
+def public_key_serialize(public_pem_path: str, public_key) -> None:
     '''
     сериализация открытого ключа в файл
     '''
@@ -52,7 +52,7 @@ def public_key_serialize(public_pem_path: str, public_key):
                                                  format=serialization.PublicFormat.SubjectPublicKeyInfo))
 
 
-def private_key_serialize(private_pem_path: str, private_key):
+def private_key_serialize(private_pem_path: str, private_key) -> None:
     '''
     сериализация закрытого ключа в файл
     '''
@@ -62,7 +62,7 @@ def private_key_serialize(private_pem_path: str, private_key):
                                                     encryption_algorithm=serialization.NoEncryption()))
 
 
-def RSA_encryption(text: str, public_key):
+def RSA_encryption(text: str, public_key) -> bytes:
     '''
     шифрование текста при помощи RSA-OAEP (это усиливающая классический RSA cхема с использованием двух криптостойких хеш-функций и паддинга, если интересно, можно почитать здесь https://habr.com/ru/post/99376/)
     '''
@@ -74,7 +74,7 @@ def RSA_encryption(text: str, public_key):
     return c_text
 
 
-def key_gen_and_save(json_data):
+def key_gen_and_save(json_data) -> None:
     '''
     symmetric key gen and save
     '''
