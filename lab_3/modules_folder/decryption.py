@@ -1,5 +1,4 @@
 from cryptography.hazmat.primitives.serialization import load_pem_public_key, load_pem_private_key
-import os
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding, hashes
@@ -8,6 +7,9 @@ from cryptography.hazmat.primitives.asymmetric import padding as assym_padding
 
 
 def symm_text_decryption(c_text: bytes, symm_key: bytes) -> str:
+    '''
+    Дешифровка текста симметричным алгоритмом: в данном случае 3DES
+    '''
     try:
         # Проверка длины ключа для 3DES
         if len(symm_key) not in (8, 16, 24):
@@ -65,20 +67,28 @@ def symm_text_decryption(c_text: bytes, symm_key: bytes) -> str:
 
 
 def dc_text_unpadding(dc_text: str):
+    '''
+    Депаддинг дешифрованного текста
+    '''
     unpadder = padding.ANSIX923(24).unpadder()
     unpadded_dc_text = unpadder.update(dc_text) + unpadder.finalize()
     return unpadded_dc_text
 
 
 def symm_deserialization(symm_filepath):
-    # десериализация ключа симметричного алгоритма
+    '''
+    десериализация ключа симметричного алгоритма
+    '''
+
     with open(symm_filepath, mode='rb') as key_file:
         content = key_file.read()
     return content
 
 
 def public_key_deserialize(public_pem):
-    # десериализация открытого ключа
+    '''
+    десериализация открытого ключа
+    '''
     with open(public_pem, 'rb') as pem_in:
         public_bytes = pem_in.read()
     d_public_key = load_pem_public_key(public_bytes)
@@ -88,7 +98,9 @@ def public_key_deserialize(public_pem):
 
 
 def private_key_deserialize(private_pem):
-    # десериализация закрытого ключа
+    '''
+    десериализация закрытого ключа
+    '''
     with open(private_pem, 'rb') as pem_in:
         private_bytes = pem_in.read()
     d_private_key = load_pem_private_key(private_bytes, password=None,)
@@ -98,6 +110,9 @@ def private_key_deserialize(private_pem):
 
 
 def read_text(text_path) -> bytes:
+    '''
+    Чтение текста из файла
+    '''
     with open(text_path, 'rb') as text_file:
         text = text_file.read()
     return text
@@ -134,7 +149,9 @@ def secret_key_deserialize(pem_file_path, password=None):
 
 
 def assym_decryption(c_text, private_key):
-    # дешифрование текста асимметричным алгоритмом
+    '''
+    дешифрование текста асимметричным алгоритмом
+    '''
     dc_text = private_key.decrypt(c_text, assym_padding.OAEP(mgf=assym_padding.MGF1(
         algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None))
     print('Assymetric decryprion algorithm returned:')
@@ -143,7 +160,9 @@ def assym_decryption(c_text, private_key):
 
 
 def write_text(filepath: str, text: str) -> None:
-    """Записывает ТОЛЬКО текст в файл"""
+    '''
+    Записывает ТОЛЬКО текст в файл
+    '''
     # Убеждаемся, что text - это строка, а не байты
     if isinstance(text, bytes):
         # Если пришли байты, декодируем их
@@ -162,6 +181,9 @@ def write_text(filepath: str, text: str) -> None:
 
 
 def decryption(json_data):
+    '''
+    Непосредственно дешифрование
+    '''
     # keys deserialization
     secret_key = secret_key_deserialize(json_data['secret_key'])
     private_key = private_key_deserialize(json_data['private_key'])

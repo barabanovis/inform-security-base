@@ -6,7 +6,9 @@ import os
 
 
 def symm_key_deserialize(symm_key_path: str) -> bytes:
-    # десериализация ключа симметричного алгоритма
+    '''
+    десериализация ключа симметричного алгоритма
+    '''
     with open(symm_key_path, mode='rb') as key_file:
         content = key_file.read()
 
@@ -16,7 +18,9 @@ def symm_key_deserialize(symm_key_path: str) -> bytes:
 
 
 def RSA_decrypt(c_text: bytes, private_key):
-    # дешифрование текста асимметричным алгоритмом
+    '''
+    дешифрование текста асимметричным алгоритмом
+    '''
     dc_text = private_key.decrypt(c_text, asymm_padding.OAEP(mgf=asymm_padding.MGF1(
         algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None))
 
@@ -26,12 +30,18 @@ def RSA_decrypt(c_text: bytes, private_key):
 
 
 def read_text(textfile_path: str):
+    '''
+    Чтение текста из файла
+    '''
     with open(textfile_path, 'r') as textfile:
         text = textfile.read()
     return text
 
 
 def text_padding(text: str) -> bytes:
+    '''
+    Паддинг текста
+    '''
     print("=== DEBUG: Padding Process ===")
     print(f"Input text (str): {text}")
 
@@ -106,12 +116,18 @@ def symm_encryption(symm_key: bytes, padded_text: bytes) -> bytes:
 
 # Сохранить текст по указанному пути
 def save_text(text: bytes, save_path: str) -> None:
+    '''
+    Сохранение текста по указанному пути
+    '''
     with open(save_path, 'wb') as save_file:
         save_file.write(text)
     print("Text saved successfully!")
 
 
 def data_encryption(json_data) -> None:
+    '''
+    Непосредственно шифрование данных
+    '''
     text_padding("my text")
 
     symm_key = symm_key_deserialize(json_data['symmetric_key'])
