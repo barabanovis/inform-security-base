@@ -4,7 +4,8 @@ import os
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QHBoxLayout, QPushButton, QLabel, QTextEdit,
                              QFileDialog, QMessageBox, QGroupBox, QRadioButton,
-                             QTabWidget, QFrame, QProgressBar, QScrollArea)
+                             QTabWidget, QFrame, QProgressBar, QScrollArea,
+                             QComboBox)  # Убран QSpinBox
 from PyQt5.QtCore import Qt, QTimer, QPropertyAnimation
 from PyQt5.QtGui import QColor
 
@@ -47,15 +48,19 @@ class CryptoApp(QMainWindow):
         """Читает настройки из JSON файла"""
         try:
             with open(self.settings_file, 'r', encoding='utf-8') as json_file:
-                return json.load(json_file)
+                data = json.load(json_file)
+                # Устанавливаем значение по умолчанию для длины ключа 3DES, если его нет
+                if 'symm_key_length' not in data:
+                    data['symm_key_length'] = 24  # 192 бита по умолчанию
+                return data
         except FileNotFoundError:
             QMessageBox.warning(
                 self, "Ошибка", f"Файл {self.settings_file} не найден!")
-            return {}
+            return {'symm_key_length': 24}
         except json.JSONDecodeError:
             QMessageBox.warning(
                 self, "Ошибка", "Ошибка в формате settings.json!")
-            return {}
+            return {'symm_key_length': 24}
 
     def save_json(self):
         """Сохраняет настройки в JSON файл"""
@@ -138,6 +143,31 @@ class CryptoApp(QMainWindow):
                 font-family: 'Consolas', monospace;
                 font-size: 11px;
                 padding: 5px;
+            }
+            QComboBox {
+                background-color: #2a2a3a;
+                border: 2px solid #4a4a6a;
+                border-radius: 8px;
+                padding: 5px;
+                color: #e0e0ff;
+                font-size: 12px;
+                min-width: 100px;
+            }
+            QComboBox::drop-down {
+                border: none;
+            }
+            QComboBox::down-arrow {
+                image: none;
+                border-left: 2px solid #8a8aff;
+                border-bottom: 2px solid #8a8aff;
+                width: 8px;
+                height: 8px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #2a2a3a;
+                color: #e0e0ff;
+                border: 2px solid #4a4a6a;
+                selection-background-color: #4a4a6a;
             }
             QTabWidget::pane {
                 background-color: #2a2a3a;
@@ -274,6 +304,52 @@ class CryptoApp(QMainWindow):
         mode_layout.addStretch()
         mode_group.setLayout(mode_layout)
         settings_layout.addWidget(mode_group)
+
+        # Группа настроек криптографии (только для 3DES)
+        crypto_group = QGroupBox("🔐 Криптографические настройки")
+        crypto_layout = QVBoxLayout()
+
+        # Настройка длины симметричного ключа для 3DES
+        des_layout = QHBoxLayout()
+        des_layout.addWidget(QLabel("🔑 Длина ключа 3DES:"))
+
+        self.key_length_combo = QComboBox()
+        # 3DES поддерживает длины: 64 бита (8 байт), 128 бит (16 байт), 192 бита (24 байта)
+        self.key_length_combo.addItem(
+            "64 бита (8 байт) - 1DES (совместимость)", 8)
+        self.key_length_combo.addItem("128 бит (16 байт) - 2DES", 16)
+        self.key_length_combo.addItem(
+            "192 бита (24 байт) - 3DES (рекомендуется)", 24)
+
+        # Устанавливаем текущее значение из настроек
+        current_length = self.json_data.get('symm_key_length', 24)
+        # Находим соответствующий индекс
+        index = self.key_length_combo.findData(current_length)
+        if index >= 0:
+            self.key_length_combo.setCurrentIndex(index)
+
+        self.key_length_combo.currentIndexChanged.connect(
+            self.on_key_length_changed)
+        des_layout.addWidget(self.key_length_combo)
+
+        # Добавляем пояснение
+        des_info = QLabel("(для шифрования/дешифрования)")
+        des_info.setStyleSheet("color: #a0a0ff; font-size: 10px;")
+        des_layout.addWidget(des_info)
+        des_layout.addStretch()
+
+        crypto_layout.addLayout(des_layout)
+
+        # Добавляем информационную метку
+        info_label = QLabel("ℹ️ 3DES: Triple Data Encryption Standard - симметричный блочный шифр\n"
+                            "ℹ️ RSA: Асимметричный алгоритм (2048 бит) для шифрования симметричного ключа")
+        info_label.setStyleSheet(
+            "color: #a0a0ff; font-size: 11px; padding: 5px; margin-top: 5px;")
+        info_label.setWordWrap(True)
+        crypto_layout.addWidget(info_label)
+
+        crypto_group.setLayout(crypto_layout)
+        settings_layout.addWidget(crypto_group)
 
         # Группа для отображения/изменения путей
         paths_group = QGroupBox("📁 Пути к файлам (settings.json)")
@@ -499,14 +575,14 @@ class CryptoApp(QMainWindow):
             "сочетающую в себе преимущества симметричного и\n"
             "асимметричного шифрования.\n\n"
             "🔑 Возможности программы:\n"
-            "• Генерация ключевых пар (RSA)\n"
+            "• Генерация ключевых пар (RSA 2048 бит)\n"
             "• Шифрование файлов с использованием гибридной схемы\n"
             "• Дешифрование файлов\n"
             "• Просмотр содержимого файлов\n"
             "• Ведение лога операций\n\n"
             "🛡️ Используемые алгоритмы:\n"
-            "• RSA (асимметричное шифрование)\n"
-            "• AES (симметричное шифрование)\n"
+            "• RSA (асимметричное шифрование, 2048 бит)\n"
+            "• 3DES (симметричное шифрование, 64/128/192 бит)\n"
             "• Гибридная схема шифрования"
         )
         description.setAlignment(Qt.AlignLeft)
@@ -575,6 +651,16 @@ class CryptoApp(QMainWindow):
         # Приветственное сообщение
         self.log("✨ Добро пожаловать в Hybrid Cryptosystem!")
         self.log("🔐 Готов к выполнению криптографических операций")
+        self.log(f"🔑 Текущая длина ключа 3DES: {self.key_length_combo.currentData()} байт "
+                 f"({self.key_length_combo.currentData() * 8} бит)")
+
+    def on_key_length_changed(self, index):
+        """Обработчик изменения длины ключа 3DES"""
+        key_length_bytes = self.key_length_combo.currentData()
+        key_length_bits = key_length_bytes * 8
+        self.json_data['symm_key_length'] = key_length_bytes
+        self.log(
+            f"🔑 Установлена длина ключа 3DES: {key_length_bits} бит ({key_length_bytes} байт)")
 
     def create_path_row(self, label_text, key_name):
         """Создает строку с меткой, путем и кнопкой изменения"""
@@ -782,7 +868,8 @@ class CryptoApp(QMainWindow):
                                     "🎉 Ключи успешно сгенерированы!\n\n"
                                     "✅ Публичный ключ\n"
                                     "✅ Приватный ключ\n"
-                                    "✅ Секретный ключ")
+                                    "✅ Секретный ключ\n\n"
+                                    "🔑 Длина RSA ключа: 2048 бит")
         except Exception as e:
             self.log(f"❌ ОШИБКА при генерации ключей: {str(e)}")
             QMessageBox.critical(
@@ -793,6 +880,11 @@ class CryptoApp(QMainWindow):
         try:
             self.log("=" * 50)
             self.log("🔒 НАЧАЛО ШИФРОВАНИЯ")
+
+            # Логируем используемую длину ключа
+            key_length = self.json_data.get('symm_key_length', 24)
+            self.log(
+                f"🔑 Используется длина ключа 3DES: {key_length * 8} бит ({key_length} байт)")
 
             # Проверяем, что все необходимые пути указаны
             required_keys = ['initial_file', 'encrypted_file', 'public_key']
@@ -844,7 +936,8 @@ class CryptoApp(QMainWindow):
             QMessageBox.information(self, "✅ УСПЕХ!",
                                     f"🎉 Шифрование завершено успешно!\n\n"
                                     f"📁 Входной файл: {os.path.basename(self.json_data['initial_file'])}\n"
-                                    f"📁 Выходной файл: {os.path.basename(self.json_data['encrypted_file'])}\n\n"
+                                    f"📁 Выходной файл: {os.path.basename(self.json_data['encrypted_file'])}\n"
+                                    f"🔑 Длина ключа 3DES: {key_length * 8} бит\n\n"
                                     f"✅ Данные защищены!")
         except Exception as e:
             self.log(f"❌ ОШИБКА при шифровании: {str(e)}")
@@ -856,6 +949,11 @@ class CryptoApp(QMainWindow):
         try:
             self.log("=" * 50)
             self.log("🔓 НАЧАЛО ДЕШИФРОВАНИЯ")
+
+            # Логируем используемую длину ключа
+            key_length = self.json_data.get('symm_key_length', 24)
+            self.log(
+                f"🔑 Используется длина ключа 3DES: {key_length * 8} бит ({key_length} байт)")
 
             # Проверяем, что все необходимые пути указаны
             required_keys = ['encrypted_file', 'decrypted_file', 'private_key']
@@ -908,7 +1006,8 @@ class CryptoApp(QMainWindow):
             QMessageBox.information(self, "✅ УСПЕХ!",
                                     f"🎉 Дешифрование завершено успешно!\n\n"
                                     f"📁 Входной файл: {os.path.basename(self.json_data['encrypted_file'])}\n"
-                                    f"📁 Выходной файл: {os.path.basename(self.json_data['decrypted_file'])}\n\n"
+                                    f"📁 Выходной файл: {os.path.basename(self.json_data['decrypted_file'])}\n"
+                                    f"🔑 Длина ключа 3DES: {key_length * 8} бит\n\n"
                                     f"✅ Исходные данные восстановлены!")
         except Exception as e:
             self.log(f"❌ ОШИБКА при дешифровании: {str(e)}")

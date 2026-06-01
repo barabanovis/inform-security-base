@@ -78,7 +78,7 @@ def key_gen_and_save(json_data) -> None:
     '''
     symmetric key gen and save
     '''
-    symm_key = symmetric_key_generate()
+    symm_key = symmetric_key_generate(json_data['symm_key_length'])
     text_key_serialize(json_data['symmetric_key'], symm_key)
 
     # asymm keys gen and save

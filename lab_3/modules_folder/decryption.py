@@ -10,8 +10,8 @@ from cryptography.hazmat.primitives.asymmetric import padding as assym_padding
 def symm_text_decryption(c_text: bytes, symm_key: bytes) -> str:
     try:
         # Проверка длины ключа для 3DES
-        if len(symm_key) not in (16, 24):
-            raise ValueError("3DES key must be 16 or 24 bytes long")
+        if len(symm_key) not in (8, 16, 24):
+            raise ValueError("3DES key must be 8, 16 or 24 bytes long")
 
         # Валидация длины данных
         if len(c_text) < 16:

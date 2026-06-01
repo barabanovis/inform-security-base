@@ -1,8 +1,5 @@
-from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.primitives.asymmetric import padding as asymm_padding
-from cryptography.hazmat.primitives import padding as symm_padding
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.backends import default_backend
 import os
@@ -74,8 +71,8 @@ def symm_encryption(symm_key: bytes, padded_text: bytes) -> bytes:
     """
     try:
         # Проверка длины ключа для 3DES
-        if len(symm_key) not in (16, 24):
-            raise ValueError("3DES key must be 16 or 24 bytes long")
+        if len(symm_key) not in (8, 16, 24):
+            raise ValueError("3DES key must be 8, 16 or 24 bytes long")
 
         # Генерация IV (8 байт для 3DES — размер блока 8 байт)
         iv = os.urandom(8)

@@ -5,5 +5,7 @@
     "symmetric_key": "data/symmetric_key.txt",
     "public_key": "data/public_key.pem",
     "private_key": "data/private_key.pem",
-    "secret_key": "data/secret_key.pem"
+    "secret_key": "data/secret_key.pem",
+    "symm_key_length": 8,
+    "rsa_key_length": 2048
 }
