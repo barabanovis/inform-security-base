@@ -1,7 +1,7 @@
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding, hashes
-from cryptography.hazmat.primitives.serialization import load_pem_public_key, load_pem_private_key
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
 # импорт RSA и padding для асимметричных алгоритмов
 from cryptography.hazmat.primitives.asymmetric import padding as assym_padding
 
@@ -11,6 +11,25 @@ import modules_folder.fileworking as fw
 def symm_text_decryption(c_text: bytes, symm_key: bytes) -> str:
     '''
     Дешифровка текста симметричным алгоритмом: в данном случае 3DES
+
+    Args:
+        c_text (bytes): Зашифрованные данные в формате байтов, которые включают:
+                       - IV (вектор инициализации) - первые 8 байт
+                       - Зашифрованный текст (остальные байты)
+                       Данные должны быть получены из функции symm_encryption()
+
+        symm_key (bytes): Симметричный ключ для дешифрования.
+                         Должен быть длиной 8, 16 или 24 байта (для 3DES).
+                         Обычно 24 байта для Triple DES с 3 ключами.
+
+    Returns:
+        str: Расшифрованный текст в виде строки (без паддинга)
+
+    Raises:
+        ValueError: Если длина ключа не соответствует требованиям 3DES
+                   или если данные имеют неверный формат
+        Exception: При ошибках дешифрования (неправильный ключ, 
+                  поврежденные данные и т.д.)
     '''
     try:
         # Проверка длины ключа для 3DES
