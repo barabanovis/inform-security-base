@@ -3,7 +3,10 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
 
+import base64
 import os  # можно обойтись стандартным модулем
+
+import modules_folder.fileworking as fw
 
 
 def symmetric_key_generate(key_size: int = 24) -> bytes:
@@ -14,6 +17,7 @@ def symmetric_key_generate(key_size: int = 24) -> bytes:
     print("Symmetric key generated!")
     print("Type of key: ", type(key))
     print("Key (hex): ", key.hex())
+    print("Key length: ", len(key))
     return key
 
 
@@ -33,14 +37,6 @@ def asymmetric_key_generate() -> bytes:
     print("public key type:", type(public_key))
     print("private key:", public_key)
     return [private_key, public_key]
-
-
-def text_key_serialize(filepath: str, key: str) -> None:
-    '''
-    сериализация(запись) данных в файл по пути filepath
-    '''
-    with open(filepath, 'wb') as key_file:
-        key_file.write(key)
 
 
 def public_key_serialize(public_pem_path: str, public_key) -> None:
@@ -78,8 +74,13 @@ def key_gen_and_save(json_data) -> None:
     '''
     symmetric key gen and save
     '''
-    symm_key = symmetric_key_generate(json_data['symm_key_length'])
-    text_key_serialize(json_data['symmetric_key'], symm_key)
+    symm_key = symmetric_key_generate()
+
+    # Сохраняем в PEM формате (текстовый)
+    pem_key = base64.b64encode(symm_key).decode('ascii')
+    pem_content = f"-----BEGIN SYMMETRIC KEY-----\n{pem_key}\n-----END SYMMETRIC KEY-----\n"
+    # Сохраняем как текст
+    fw.save_text(pem_content, json_data['symmetric_key'])
 
     # asymm keys gen and save
     private_key, public_key = asymmetric_key_generate()
@@ -88,4 +89,4 @@ def key_gen_and_save(json_data) -> None:
 
     # encryption of symm_key
     crypted_symm_key = RSA_encryption(symm_key, public_key)
-    text_key_serialize(json_data['secret_key'], crypted_symm_key)
+    fw.save_binary(crypted_symm_key, json_data['secret_key'])

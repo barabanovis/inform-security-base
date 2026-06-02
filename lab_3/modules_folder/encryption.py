@@ -2,19 +2,11 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.asymmetric import padding as asymm_padding
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.backends import default_backend
+
+import base64
 import os
 
-
-def symm_key_deserialize(symm_key_path: str) -> bytes:
-    '''
-    десериализация ключа симметричного алгоритма
-    '''
-    with open(symm_key_path, mode='rb') as key_file:
-        content = key_file.read()
-
-    print("Deserialized symm key type:", type(content))
-    print("Deserialized symm key:", content)
-    return content
+import modules_folder.fileworking as fw
 
 
 def RSA_decrypt(c_text: bytes, private_key):
@@ -27,15 +19,6 @@ def RSA_decrypt(c_text: bytes, private_key):
     print("Text decrypted!")
     print("Text: ", dc_text)
     return dc_text
-
-
-def read_text(textfile_path: str):
-    '''
-    Чтение текста из файла
-    '''
-    with open(textfile_path, 'r') as textfile:
-        text = textfile.read()
-    return text
 
 
 def text_padding(text: str) -> bytes:
@@ -71,8 +54,6 @@ def text_padding(text: str) -> bytes:
         print("SUCCESS: Padding correct!")
     print("=" * 30)
     return padded_text
-
-# Зашифровать текст по симметрическому ключу
 
 
 def symm_encryption(symm_key: bytes, padded_text: bytes) -> bytes:
@@ -114,24 +95,27 @@ def symm_encryption(symm_key: bytes, padded_text: bytes) -> bytes:
         raise
 
 
-# Сохранить текст по указанному пути
-def save_text(text: bytes, save_path: str) -> None:
-    '''
-    Сохранение текста по указанному пути
-    '''
-    with open(save_path, 'wb') as save_file:
-        save_file.write(text)
-    print("Text saved successfully!")
+def read_symmetric_key_from_pem(pem_path: str) -> bytes:
+    '''Чтение симметричного ключа из PEM файла'''
+    with open(pem_path, 'r') as f:
+        pem_content = f.read()
+
+    # Извлекаем base64 данные
+    import re
+    b64_match = re.search(r'-----BEGIN SYMMETRIC KEY-----\n(.*?)\n-----END SYMMETRIC KEY-----',
+                          pem_content, re.DOTALL)
+    if b64_match:
+        return base64.b64decode(b64_match.group(1))
+    raise ValueError("Invalid PEM file")
 
 
 def data_encryption(json_data) -> None:
     '''
     Непосредственно шифрование данных
     '''
-    text_padding("my text")
-
-    symm_key = symm_key_deserialize(json_data['symmetric_key'])
-    text = read_text(json_data['initial_file'])
+    symm_key = read_symmetric_key_from_pem(json_data['symmetric_key'])
+    print(symm_key, len(symm_key))
+    text = fw.read_text(json_data['initial_file'])
     text = text_padding(text)
     c_text = symm_encryption(symm_key, text)
-    save_text(c_text, json_data['encrypted_file'])
+    fw.save_binary(c_text, json_data['encrypted_file'])

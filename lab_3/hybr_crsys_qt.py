@@ -12,6 +12,7 @@ from PyQt5.QtGui import QColor
 import modules_folder.key_generation as key_generation
 import modules_folder.encryption as encryption
 import modules_folder.decryption as decryption
+import modules_folder.fileworking as fw
 
 
 class AnimatedButton(QPushButton):
@@ -40,27 +41,9 @@ class CryptoApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.settings_file = 'settings.json'
-        self.json_data = self.read_json()
+        self.json_data = fw.read_json()
         self.init_ui()
         self.setup_styles()
-
-    def read_json(self):
-        """Читает настройки из JSON файла"""
-        try:
-            with open(self.settings_file, 'r', encoding='utf-8') as json_file:
-                data = json.load(json_file)
-                # Устанавливаем значение по умолчанию для длины ключа 3DES, если его нет
-                if 'symm_key_length' not in data:
-                    data['symm_key_length'] = 24  # 192 бита по умолчанию
-                return data
-        except FileNotFoundError:
-            QMessageBox.warning(
-                self, "Ошибка", f"Файл {self.settings_file} не найден!")
-            return {'symm_key_length': 24}
-        except json.JSONDecodeError:
-            QMessageBox.warning(
-                self, "Ошибка", "Ошибка в формате settings.json!")
-            return {'symm_key_length': 24}
 
     def save_json(self):
         """Сохраняет настройки в JSON файл"""

@@ -1,16 +1,10 @@
 import argparse
-import json
 
-import modules_folder.key_generation as key_generation
-import modules_folder.encryption as encryption
-import modules_folder.decryption as decryption
+from modules_folder.key_generation import key_gen_and_save
+from modules_folder.encryption import data_encryption
+from modules_folder.decryption import decryption
 
-
-def read_json():
-    # читаем из файла
-    with open('settings.json') as json_file:
-        json_data = json.load(json_file)
-    return json_data
+from modules_folder.fileworking import read_json
 
 
 def argument_parsing() -> str:
@@ -41,9 +35,10 @@ def argument_parsing() -> str:
 if __name__ == '__main__':
     working_mode = argument_parsing()
     json_data = read_json()
-    if working_mode == 'generation':
-        key_generation.key_gen_and_save(json_data)
-    elif working_mode == 'encryption':
-        encryption.data_encryption(json_data)
-    else:
-        decryption.decryption(json_data)
+    match working_mode:
+        case 'generation':
+            key_gen_and_save(json_data)
+        case  'encryption':
+            data_encryption(json_data)
+        case 'decryption':
+            decryption(json_data)
