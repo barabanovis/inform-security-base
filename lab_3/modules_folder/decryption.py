@@ -90,6 +90,14 @@ def symm_text_decryption(c_text: bytes, symm_key: bytes) -> str:
 def dc_text_unpadding(dc_text: str):
     '''
     Депаддинг дешифрованного текста
+
+    Параметры:
+        dc_text (str): Дешифрованный текст с добавленным padding'ом ANSI X9.23.
+                       Должен иметь длину, кратную 24 байтам (размер блока).
+                       Последний байт указывает количество добавленных байт padding'а.
+
+    Возвращает:
+        str: Исходный текст без padding'а
     '''
     unpadder = padding.ANSIX923(24).unpadder()
     unpadded_dc_text = unpadder.update(dc_text) + unpadder.finalize()
@@ -98,11 +106,28 @@ def dc_text_unpadding(dc_text: str):
 
 def assym_decryption(c_text: bytes, private_key: bytes):
     '''
-    дешифрование текста асимметричным алгоритмом
+    Дешифрование текста асимметричным алгоритмом (RSA)
+
+    Параметры:
+        c_text (bytes): Зашифрованный текст в байтовом формате.
+                        Получен в результате асимметричного шифрования с использованием OAEP.
+                        Размер зависит от длины ключа (обычно 256, 384, 512 байт).
+
+        private_key (bytes): Объект приватного RSA ключа.
+                             Должен содержать закрытый ключ для расшифровки.
+                             Поддерживает алгоритм OAEP с MGF1 и SHA-256.
+
+    Возвращает:
+        bytes: Дешифрованный текст (с добавленным padding'ом, требующим дальнейшей обработки)
+
+    Примечание:
+        - Используется OAEP padding с MGF1 (Mask Generation Function)
+        - Хеш-алгоритм: SHA-256
+        - Результат требует вызова dc_text_unpadding() для удаления padding'а
     '''
     dc_text = private_key.decrypt(c_text, assym_padding.OAEP(mgf=assym_padding.MGF1(
         algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None))
-    print('Assymetric decryprion algorithm returned:')
+    print('Assymetric decryption algorithm returned:')
     print(dc_text)
     return dc_text
 
