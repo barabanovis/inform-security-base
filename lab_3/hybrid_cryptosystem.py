@@ -22,14 +22,13 @@ def argument_parsing() -> str:
 
     args = parser.parse_args()
 
-    if args.generation:
-        return 'generation'
-
-    elif args.encryption:
-        return 'encryption'
-
-    elif args.decryption:
-        return 'decryption'
+    match args:
+        case _ if args.generation:
+            return 'generation'
+        case _ if args.encryption:
+            return 'encryption'
+        case _ if args.decryption:
+            return 'decryption'
 
 
 if __name__ == '__main__':
